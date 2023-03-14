@@ -7,6 +7,6 @@
 /.idea/dataSources/
 /.idea/dataSources.local.xml
 # Target and Tests
-/target/
-/test/
+target/
+test/
 /src/main/java/userinformation.java

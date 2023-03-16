@@ -10,5 +10,8 @@ public interface L4STMetaData {
     ArrayList<String> getPrimaryKeyColumns();
     int getNumberOfPrimaryKeyColumns();
     LinkedHashMap<String, Map.Entry<String, String>> getForeignKeyColumns();
+    public int getNumberOfForeignKeyColumns();
+    public ArrayList<String> getNonGeneratedColumns();
+    public int getNumberOfNonGeneratedColumns();
     LinkedHashMap<String, Class> getColumnTypes();
 }

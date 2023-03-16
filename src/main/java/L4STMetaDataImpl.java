@@ -8,22 +8,28 @@ public class L4STMetaDataImpl implements L4STMetaData{
 
     private final String TABLE_NAME;
     private final String SCHEMA_NAME;
-    private final int NUMBER_OF_COLUMNS;
     private final ArrayList<String> COLUMNS;
+    private final int NUMBER_OF_COLUMNS;
     private final ArrayList<String> PRIMARY_KEY_COLUMNS;
     private final int NUMBER_OF_PRIMARY_KEY_COLUMNS;
     private final LinkedHashMap<String, Map.Entry<String, String>> FOREIGN_KEY_COLUMNS;
+    private final int NUMBER_OF_FOREIGN_KEY_COLUMNS;
+    private final ArrayList<String> NON_GENERATED_COLUMNS;
+    private final int NUMBER_OF_NON_GENERATED_COLUMNS;
     private final LinkedHashMap<String, Class> COLUMN_TYPES;
 
     L4STMetaDataImpl(final Connection connection) throws Exception {
         DatabaseMetaData metaData = connection.getMetaData();
         this.SCHEMA_NAME = this.setSchemaName();
         this.TABLE_NAME = this.setTableName();
-        this.NUMBER_OF_COLUMNS = this.setNumberOfColumns(metaData);
         this.COLUMNS = this.setColumns(metaData);
-        this.NUMBER_OF_PRIMARY_KEY_COLUMNS = this.setNumberOfPrimaryKeyColumns(metaData);
+        this.NUMBER_OF_COLUMNS = this.setNumberOfColumns();
         this.PRIMARY_KEY_COLUMNS = this.setPrimaryKeysColumns(metaData);
-        this.FOREIGN_KEY_COLUMNS = this.setForeignKeys(metaData);
+        this.NUMBER_OF_PRIMARY_KEY_COLUMNS = this.setNumberOfPrimaryKeyColumns();
+        this.FOREIGN_KEY_COLUMNS = this.setForeignKeysColumns(metaData);
+        this.NUMBER_OF_FOREIGN_KEY_COLUMNS = this.setNumberOfForeignKeyColumns();
+        this.NON_GENERATED_COLUMNS = this.setNonGeneratedColumns(metaData);
+        this.NUMBER_OF_NON_GENERATED_COLUMNS = this.setNumberOfNonGeneratedColumns();
         this.COLUMN_TYPES = this.setColumnTypes(metaData);
     }
 
@@ -48,9 +54,19 @@ public class L4STMetaDataImpl implements L4STMetaData{
     public LinkedHashMap<String, Map.Entry<String, String>> getForeignKeyColumns() {
         return this.FOREIGN_KEY_COLUMNS;
     }
+    public int getNumberOfForeignKeyColumns() {
+        return this.NUMBER_OF_FOREIGN_KEY_COLUMNS;
+    }
+    public ArrayList<String> getNonGeneratedColumns() {
+        return this.NON_GENERATED_COLUMNS;
+    }
+    public int getNumberOfNonGeneratedColumns() {
+        return this.NUMBER_OF_NON_GENERATED_COLUMNS;
+    }
     public LinkedHashMap<String, Class> getColumnTypes() {
         return this.COLUMN_TYPES;
     }
+
 
     private String setSchemaName() throws Exception {
         String[] schemaName = this.getClass().getSimpleName().split("_");
@@ -78,62 +94,40 @@ public class L4STMetaDataImpl implements L4STMetaData{
                 "Improper class naming conventions include, but are not limited to, _{schema_name}, {table_name}_{schema_name}, and {table_name}__" +
                 "Proper class naming conventions are limited to {schema_name}_{table_name}, and _{table_name}. Please use one of the following");
     }
-    private int setNumberOfColumns(DatabaseMetaData metaData) throws SQLException {
-        try(ResultSet columns = metaData.getColumns(null, this.SCHEMA_NAME,  this.TABLE_NAME, null)) {
-            if (columns != null) {
-                columns.last();
-            }
-            return columns.getRow();
-        }
-        catch (Exception e) {
-            throw e;
-        }
-    }
-    private ArrayList<String> setColumns(DatabaseMetaData metaData) throws SQLException {
+    private ArrayList<String> setColumns(DatabaseMetaData metaData) throws Exception {
         try(ResultSet columns = metaData.getColumns(null, this.SCHEMA_NAME, this.TABLE_NAME, null)){
         if (columns == null || !columns.isBeforeFirst()) {
-            //TODO throw a custom exception
+            throw new Exception("Metadata could not be retrieved.");
         }
-        ArrayList<String> columnsList = new ArrayList<>(this.NUMBER_OF_COLUMNS);
+        ArrayList<String> columnsList = new ArrayList<>();
         while (columns.next()) {
             columnsList.add(columns.getString("COLUMN_NAME"));
         }
         return columnsList;
         }
-        catch (Exception e){
-            throw e;
-        }
     }
-    private int setNumberOfPrimaryKeyColumns(DatabaseMetaData metaData) throws SQLException {
-        try(ResultSet primaryKeyColumns = metaData.getPrimaryKeys(null, this.SCHEMA_NAME, this.TABLE_NAME)) {
-            if (primaryKeyColumns != null) {
-                primaryKeyColumns.last();
-            }
-            return primaryKeyColumns.getRow();
-        }
-        catch (Exception e) {
-            throw e;
-        }
+    private int setNumberOfColumns() {
+        return this.COLUMNS != null ? this.COLUMNS.size() : 0;
     }
-    private ArrayList<String> setPrimaryKeysColumns(DatabaseMetaData metaData) throws SQLException {
+    private ArrayList<String> setPrimaryKeysColumns(DatabaseMetaData metaData) throws Exception {
         try(ResultSet primaryKeys = metaData.getPrimaryKeys(null, this.SCHEMA_NAME, this.TABLE_NAME)) {
             if (primaryKeys == null || !primaryKeys.isBeforeFirst()) {
-                //TODO throw a custom exception
+                throw new Exception("Metadata could not be retrieved.");
             }
-            ArrayList<String> primaryKeyColumnsList = new ArrayList<>(this.NUMBER_OF_PRIMARY_KEY_COLUMNS);
+            ArrayList<String> primaryKeyColumnsList = new ArrayList<>();
             while (primaryKeys.next()) {
                 primaryKeyColumnsList.add(primaryKeys.getString("COLUMN_NAME"));
             }
             return primaryKeyColumnsList;
         }
-        catch (Exception e){
-            throw e;
-        }
     }
-    private LinkedHashMap<String, Map.Entry<String, String>> setForeignKeys(DatabaseMetaData metaData) throws SQLException {
+    private int setNumberOfPrimaryKeyColumns() {
+        return this.PRIMARY_KEY_COLUMNS != null ? this.PRIMARY_KEY_COLUMNS.size() : 0;
+    }
+    private LinkedHashMap<String, Map.Entry<String, String>> setForeignKeysColumns(DatabaseMetaData metaData) throws Exception {
         try(ResultSet importedKeys = metaData.getImportedKeys(null, this.SCHEMA_NAME, this.TABLE_NAME)) {
             if (importedKeys == null || !importedKeys.isBeforeFirst()) {
-                //TODO throw a custom exception
+                throw new Exception("Metadata could not be retrieved.");
             }
             LinkedHashMap<String, Map.Entry<String, String>> foreignKeys = new LinkedHashMap<>();
             while (importedKeys.next()) {
@@ -143,10 +137,30 @@ public class L4STMetaDataImpl implements L4STMetaData{
             return foreignKeys;
         }
     }
-    private LinkedHashMap<String, Class> setColumnTypes(DatabaseMetaData metaData) throws SQLException {
+    private int setNumberOfForeignKeyColumns() {
+        return this.FOREIGN_KEY_COLUMNS != null ? this.FOREIGN_KEY_COLUMNS.size() : 0;
+    }
+    private ArrayList<String> setNonGeneratedColumns(DatabaseMetaData metaData) throws Exception {
+        try(ResultSet columns = metaData.getColumns(null, this.SCHEMA_NAME,  this.TABLE_NAME, null)) {
+            if (columns == null || !columns.isBeforeFirst()) {
+                throw new Exception("Metadata could not be retrieved.");
+            }
+            ArrayList<String> nonGeneratedColumns = new ArrayList<>();
+            while(columns.next()) {
+                if(columns.getString("IS_AUTOINCREMENT").equals("NO") || columns.getString("IS_GENERATEDCOLUMN").equals("NO")) {
+                    nonGeneratedColumns.add(columns.getString("COLUMN_NAME"));
+                }
+            }
+            return nonGeneratedColumns;
+        }
+    }
+    private int setNumberOfNonGeneratedColumns() {
+        return this.NON_GENERATED_COLUMNS != null ? this.NON_GENERATED_COLUMNS.size() : 0;
+    }
+    private LinkedHashMap<String, Class> setColumnTypes(DatabaseMetaData metaData) throws Exception {
         try(ResultSet columns = metaData.getColumns(null, this.SCHEMA_NAME, this.TABLE_NAME, null)) {
             if (columns == null || !columns.isBeforeFirst()) {
-                //TODO throw a custom exception
+                throw new Exception("Metadata could not be retrieved.");
             }
             LinkedHashMap<String, Class> columnTypes = new LinkedHashMap<>();
             while (columns.next()) {
@@ -156,11 +170,8 @@ public class L4STMetaDataImpl implements L4STMetaData{
             }
             return columnTypes;
         }
-        catch (Exception e) {
-            throw e;
-        }
     }
-    private static Class convertSqlTypeToJavaType(int typeNumber){
+    private static Class convertSqlTypeToJavaType(int typeNumber) throws Exception {
 
         ArrayList<Integer> ShortTypes = new ArrayList<>() {
             {
@@ -300,8 +311,7 @@ public class L4STMetaDataImpl implements L4STMetaData{
         } else if (URLTypes.contains(typeNumber)) {
             return URL.class;
         } else {
-            // TODO Throw custom exception
-            return null;
+            throw new Exception("The Type enumeration value inputted does not match any of the valid SQL types");
         }
     }
 }

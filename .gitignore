@@ -10,4 +10,5 @@
 target/
 test/
 /src/main/java/userinformation.java
+/src/main/java/usersecurity.java
 /src/main/java/DAOSQLQueryGenerator.java

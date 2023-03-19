@@ -5,12 +5,14 @@ import java.util.Map;
 public interface L4STMetaData {
     String getTableName();
     String getSchemaName();
-    int getNumberOfColumns();
-    ArrayList<String> getColumns();
+    int getNumberOfAllColumns();
+    ArrayList<String> getAllColumns();
     ArrayList<String> getPrimaryKeyColumns();
     int getNumberOfPrimaryKeyColumns();
-    LinkedHashMap<String, Map.Entry<String, String>> getForeignKeyColumns();
-    public int getNumberOfForeignKeyColumns();
+    ArrayList<String> getForeignKeyColumns();
+    int getNumberOfForeignKeyColumns();
+    LinkedHashMap<String, Map.Entry<String, String>> getForeignColumns();
+    public int getNumberOfForeignColumns();
     public ArrayList<String> getNonGeneratedColumns();
     public int getNumberOfNonGeneratedColumns();
     LinkedHashMap<String, Class> getColumnTypes();

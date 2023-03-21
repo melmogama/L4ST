@@ -14,8 +14,8 @@ public class L4STMetaDataImpl implements L4STMetaData{
     private final int NUMBER_OF_PRIMARY_KEY_COLUMNS;
     private final ArrayList<String> FOREIGN_KEY_COLUMNS;
     private final int NUMBER_OF_FOREIGN_KEY_COLUMNS;
-    private final LinkedHashMap<String, Map.Entry<String, String>> FOREIGN_COLUMNS;
-    private final int NUMBER_OF_FOREIGN_COLUMNS;
+    private final LinkedHashMap<String, Map.Entry<String, String>> FOREIGN_REFERENCES;
+    private final int NUMBER_OF_FOREIGN_REFERENCES;
     private final ArrayList<String> NON_GENERATED_COLUMNS;
     private final int NUMBER_OF_NON_GENERATED_COLUMNS;
     private final LinkedHashMap<String, Class> COLUMN_TYPES;
@@ -30,8 +30,8 @@ public class L4STMetaDataImpl implements L4STMetaData{
         this.NUMBER_OF_PRIMARY_KEY_COLUMNS = this.setNumberOfPrimaryKeyColumns();
         this.FOREIGN_KEY_COLUMNS = this.setForeignKeyColumns(metaData);
         this.NUMBER_OF_FOREIGN_KEY_COLUMNS = this.setNumberOfForeignKeyColumns();
-        this.FOREIGN_COLUMNS = this.setForeignColumns(metaData);
-        this.NUMBER_OF_FOREIGN_COLUMNS = this.setNumberOfForeignColumns();
+        this.FOREIGN_REFERENCES = this.setForeignColumns(metaData);
+        this.NUMBER_OF_FOREIGN_REFERENCES = this.setNumberOfForeignColumns();
         this.NON_GENERATED_COLUMNS = this.setNonGeneratedColumns(metaData);
         this.NUMBER_OF_NON_GENERATED_COLUMNS = this.setNumberOfNonGeneratedColumns();
         this.COLUMN_TYPES = this.setColumnTypes(metaData);
@@ -61,11 +61,11 @@ public class L4STMetaDataImpl implements L4STMetaData{
     public int getNumberOfForeignKeyColumns() {
         return this.NUMBER_OF_FOREIGN_KEY_COLUMNS;
     }
-    public LinkedHashMap<String, Map.Entry<String, String>> getForeignColumns() {
-        return this.FOREIGN_COLUMNS;
+    public LinkedHashMap<String, Map.Entry<String, String>> getForeignReferences() {
+        return this.FOREIGN_REFERENCES;
     }
-    public int getNumberOfForeignColumns() {
-        return this.NUMBER_OF_FOREIGN_COLUMNS;
+    public int getNumberOfForeignReferences() {
+        return this.NUMBER_OF_FOREIGN_REFERENCES;
     }
     public ArrayList<String> getNonGeneratedColumns() {
         return this.NON_GENERATED_COLUMNS;
@@ -86,10 +86,8 @@ public class L4STMetaDataImpl implements L4STMetaData{
         else if ((schemaName.length == 1)) {
             return null;
         }
-        throw new Exception("The naming convention of class " + this.getClass().getName() + " is improper. " +
-                "Please follow the naming convention of {schema_name}_{table_name}.java, otherwise the schema and table names will not be recognized." +
-                "Improper class naming conventions include, but are not limited to, _{schema_name}, {table_name}_{schema_name}, and {table_name}__" +
-                "Proper class naming conventions are limited to {schema_name}_{table_name}, {table_name}_, and _{table_name}. Please use one of the following");
+        throw new Exception("The naming convention of class " + this.getClass().getName() + " is improper.\n" +
+                "Please follow the naming convention of {schema_name}_{table_name}.java or {table_name}.java, otherwise the schema and table names will not be recognized.");
     }
     private String setTableName() throws Exception {
         String[] tableName = this.getClass().getSimpleName().split("_");
@@ -99,10 +97,8 @@ public class L4STMetaDataImpl implements L4STMetaData{
         else if ((tableName.length == 1) && (!tableName[0].isBlank())) {
             return tableName[0];
         }
-        throw new Exception("The naming convention of class " + this.getClass().getName() + " is improper. " +
-                "Please follow the naming convention of {schema_name}_{table_name}.java, otherwise the schema and table names will not be recognized." +
-                "Improper class naming conventions include, but are not limited to, _{schema_name}, {table_name}_{schema_name}, and {table_name}__" +
-                "Proper class naming conventions are limited to {schema_name}_{table_name}, and _{table_name}. Please use one of the following");
+        throw new Exception("The naming convention of class " + this.getClass().getName() + " is improper.\n" +
+                "Please follow the naming convention of {schema_name}_{table_name}.java or {table_name}.java, otherwise the schema and table names will not be recognized.");
     }
     private ArrayList<String> setColumns(DatabaseMetaData metaData) throws Exception {
         try(ResultSet columns = metaData.getColumns(null, this.SCHEMA_NAME, this.TABLE_NAME, null)){
@@ -163,7 +159,7 @@ public class L4STMetaDataImpl implements L4STMetaData{
         }
     }
     private int setNumberOfForeignColumns() {
-        return this.FOREIGN_COLUMNS != null ? this.FOREIGN_COLUMNS.size() : 0;
+        return this.FOREIGN_REFERENCES != null ? this.FOREIGN_REFERENCES.size() : 0;
     }
     private ArrayList<String> setNonGeneratedColumns(DatabaseMetaData metaData) throws Exception {
         try(ResultSet columns = metaData.getColumns(null, this.SCHEMA_NAME,  this.TABLE_NAME, null)) {
@@ -191,12 +187,12 @@ public class L4STMetaDataImpl implements L4STMetaData{
             while (columns.next()) {
                 String columnName = columns.getString("COLUMN_NAME");
                 int columnType = columns.getInt("DATA_TYPE");
-                columnTypes.put(columnName, convertSqlTypeToJavaType(columnType));
+                columnTypes.put(columnName, convertSqlTypeToJavaClass(columnType));
             }
             return columnTypes;
         }
     }
-    private static Class convertSqlTypeToJavaType(int typeNumber) throws Exception {
+    private static Class convertSqlTypeToJavaClass(int typeNumber) throws Exception {
 
         ArrayList<Integer> ShortTypes = new ArrayList<>() {
             {

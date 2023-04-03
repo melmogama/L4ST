@@ -15,9 +15,9 @@ public class user extends L4STImpl {
   }
 }
 ```
-> `allowNullValues` tells the library if it is allowed to *__update__* any and all table fields to **null**
-(Assuming entity value is set to null)
->
+> `allowNullValues` tells the library if it is allowed to `UPDATE` or `SELECT` any and 
+> all table fields to/ by `null` (Assuming the entity value is set to `null`).
+
 Just like that, you have established a connection to your database table named **_user_**, 
 provided you give a `java.sql.Connection` to your database. 
 
@@ -25,7 +25,7 @@ provided you give a `java.sql.Connection` to your database.
 
 ## Creating An Entity To Map To Table
 Assuming **_user_** has columns `| Name | Age | Contact |`, you 
-can create an entity object to easily map your values to the table. 
+can create an entity object to easily map your values to the table.
 
 #### Entity Object Example
 ```
@@ -35,6 +35,7 @@ public class UserEntity extends L4STEntity {
   public String Contact;
 }
 ```
+> It's important to note that entity values only allow primitives and `String`s
 <br>
 
 ## Creating A Record In **user**

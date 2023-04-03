@@ -1,10 +1,10 @@
 [![](https://jitpack.io/v/melmogama/L4ST.svg)](https://jitpack.io/#melmogama/L4ST)
 <br>
 # L4ST
-## Creating A Connection To A Table
 L4ST is a persistence library that uses the names of your source files and variables to connect to your database. It 
 uses reflection to match file and variables names with that of the database (case senstitive).
 
+## Creating A Connection To A Table
 #### Database Table Connection Example
 ---
 >
@@ -50,3 +50,5 @@ public static void main(String[] args) {
   userTable.create(user);
 }
 ```
+
+If `allowNullValues` is `true`, then `null` Strings will not throw an error when trying to set parameters.

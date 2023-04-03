@@ -33,25 +33,25 @@ abstract class L4STImpl extends L4STMetaDataImpl implements L4ST {
     }
     public boolean select(L4STEntity entity) throws SQLException {
         this.resetFields(entity);
-        this.query = String.format(QueryStrings.SELECT, "*", super.getTableName(), this.primaryKeyConditions(entity));
+        this.query = String.format(QueryStrings.SELECT, "*", super.getTableName(), this.primaryKeyConditions());
         this.createPreparedStatement();
         return this.executePreparedStatement();
     }
     public boolean select(L4STEntity entity, String columns) throws SQLException {
         this.resetFields(entity);
-        this.query = String.format(QueryStrings.SELECT, columns, super.getTableName(), this.primaryKeyConditions(entity));
+        this.query = String.format(QueryStrings.SELECT, columns, super.getTableName(), this.primaryKeyConditions());
         this.createPreparedStatement();
         return this.executePreparedStatement();
     }
     public boolean update(L4STEntity entity) throws SQLException {
         this.resetFields(entity);
-        this.query = String.format(QueryStrings.UPDATE, super.getTableName(), this.updateColumnValues(entity), this.primaryKeyConditions(entity));
+        this.query = String.format(QueryStrings.UPDATE, super.getTableName(), this.updateColumnValues(), this.primaryKeyConditions());
         this.createPreparedStatement();
         return this.executePreparedStatement();
     }
     public boolean delete(L4STEntity entity) throws SQLException {
         this.resetFields(entity);
-        this.query = String.format(QueryStrings.DELETE, super.getTableName(), this.primaryKeyConditions(entity));
+        this.query = String.format(QueryStrings.DELETE, super.getTableName(), this.primaryKeyConditions());
         this.createPreparedStatement();
         return this.executePreparedStatement();
     }
@@ -82,7 +82,7 @@ abstract class L4STImpl extends L4STMetaDataImpl implements L4ST {
         }
         return String.valueOf(parameters);
     }
-    private String primaryKeyConditions(L4STEntity entity) throws SQLException {
+    private String primaryKeyConditions() throws SQLException {
         StringBuilder primaryKeyCondition = new StringBuilder();
         for(int columnsIndex = 0; columnsIndex < super.getNumberOfPrimaryKeyColumns(); columnsIndex++) {
             if(columnExistsInEntityAndIsNotNull(super.getPrimaryKeyColumns().get(columnsIndex))) {
@@ -99,7 +99,7 @@ abstract class L4STImpl extends L4STMetaDataImpl implements L4ST {
         }
         return String.valueOf(primaryKeyCondition);
     }
-    private String updateColumnValues(L4STEntity entity) throws SQLException {
+    private String updateColumnValues() throws SQLException {
         StringBuilder columnEqualsValues = new StringBuilder();
         for(int columnIndex = 0; columnIndex < super.getNumberOfNonGeneratedColumns(); columnIndex++) {
             if(columnExistsInEntityAndIsNotNull(super.getNonGeneratedColumns().get(columnIndex))) {

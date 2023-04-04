@@ -16,7 +16,7 @@ public class user extends L4STImpl {
 }
 ```
 > `allowNullValues` tells the library if it is allowed to `UPDATE` or `SELECT` any and 
-> all table fields to/ by `null` (Assuming the entity value is set to `null`).
+> all table fields to/ by `null` (Assuming any of the entity's values are set to `null`).
 
 Just like that, you have established a connection to your database table named **_user_**, 
 provided you give a `java.sql.Connection` to your database. 
@@ -35,7 +35,7 @@ public class UserEntity extends L4STEntity {
   public String Contact;
 }
 ```
-> It's important to note that entity values only allow primitives and `String`s
+> It's important to note that entity values are only allowed to be primitives and `String`s
 <br>
 
 ## Creating A Record In **user**
@@ -52,4 +52,4 @@ public static void main(String[] args) {
 }
 ```
 
-If `allowNullValues` is `true`, then `null` Strings will not throw an error when trying to set parameters.
+If `allowNullValues` is `true`, then `null` Strings will not throw an error when trying to set parameters to `null`.

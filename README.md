@@ -5,11 +5,10 @@ L4ST is a persistence library that uses the names of your source files and varia
 uses reflection to match file and variables names with that of the database (case senstitive).
 
 ## Creating A Connection To A Table
+
 #### Database Table Connection Example
----
->
 ```
-public class user extends L4STImpl {
+public class user extends L4ST {
   public user(Connection connection, boolean allowNullValues) throws Exception{
     super(connection, allowNullValues);
   }

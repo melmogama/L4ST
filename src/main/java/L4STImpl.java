@@ -10,7 +10,7 @@ abstract class L4STImpl extends L4STMetaDataImpl implements L4ST {
     final private Connection CONNECTION;
     private String query;
     private final ArrayList<String> parametersToBeSet = new ArrayList<>();
-    private final HashMap<String, Object> entityToTableFields = new HashMap<>();
+    private final HashMap<String, Object> entityFieldsFoundInTable = new HashMap<>();
     PreparedStatement preparedStatement;
     private ResultSet records;
     private boolean allowNullValues = false;
@@ -83,40 +83,40 @@ abstract class L4STImpl extends L4STMetaDataImpl implements L4ST {
         return String.valueOf(parameters);
     }
     private String primaryKeyConditions() throws SQLException {
-        StringBuilder primaryKeyCondition = new StringBuilder();
+        StringBuilder primaryKeyWhereClause = new StringBuilder();
         for(int columnsIndex = 0; columnsIndex < super.getNumberOfPrimaryKeyColumns(); columnsIndex++) {
             if(columnExistsInEntityAndIsNotNull(super.getPrimaryKeyColumns().get(columnsIndex))) {
                 if(columnsIndex != 0) {
-                    primaryKeyCondition.append(" AND ");
+                    primaryKeyWhereClause.append(" AND ");
                 }
-                primaryKeyCondition.append(super.getPrimaryKeyColumns().get(columnsIndex)).append(" = ?");
+                primaryKeyWhereClause.append(super.getPrimaryKeyColumns().get(columnsIndex)).append(" = ?");
                 this.parametersToBeSet.add(super.getPrimaryKeyColumns().get(columnsIndex));
             }
         }
-        if(primaryKeyCondition.isEmpty()) {
+        if(primaryKeyWhereClause.isEmpty()) {
             throw new SQLException("The entity you used as an input does not specify a WHERE clause, " +
                                    "which could lead to unintended database manipulations.");
         }
-        return String.valueOf(primaryKeyCondition);
+        return String.valueOf(primaryKeyWhereClause);
     }
     private String updateColumnValues() throws SQLException {
-        StringBuilder columnEqualsValues = new StringBuilder();
+        StringBuilder columnEqualsValuesClause = new StringBuilder();
         for(int columnIndex = 0; columnIndex < super.getNumberOfNonGeneratedColumns(); columnIndex++) {
             if(columnExistsInEntityAndIsNotNull(super.getNonGeneratedColumns().get(columnIndex))) {
                 if (columnIndex != 0) {
-                    columnEqualsValues.append(",");
+                    columnEqualsValuesClause.append(",");
                 }
-                columnEqualsValues.append(super.getNonGeneratedColumns().get(columnIndex)).append(" = ?");
+                columnEqualsValuesClause.append(super.getNonGeneratedColumns().get(columnIndex)).append(" = ?");
                 this.parametersToBeSet.add(super.getNonGeneratedColumns().get(columnIndex));
             }
         }
-        if(columnEqualsValues.isEmpty()) {
+        if(columnEqualsValuesClause.isEmpty()) {
             throw new SQLException("The entity you used as an input does not specify any columns/ fields to update.");
         }
-        return String.valueOf(columnEqualsValues);
+        return String.valueOf(columnEqualsValuesClause);
     }
     private boolean columnExistsInEntityAndIsNotNull(String tableColumn) {
-        return (this.entityToTableFields.containsKey(tableColumn)) && (this.allowNullValues || (this.entityToTableFields.get(tableColumn) != null));
+        return (this.entityFieldsFoundInTable.containsKey(tableColumn)) && (this.allowNullValues || (this.entityFieldsFoundInTable.get(tableColumn) != null));
     }
 
     private void createPreparedStatement() throws SQLException {
@@ -126,7 +126,7 @@ abstract class L4STImpl extends L4STMetaDataImpl implements L4ST {
     private void setParameters() throws SQLException {
         for(int parameterIndex = 0; parameterIndex < this.parametersToBeSet.size(); parameterIndex++) {
             try {
-                Object parameter = this.entityToTableFields.get(this.parametersToBeSet.get(parameterIndex));
+                Object parameter = this.entityFieldsFoundInTable.get(this.parametersToBeSet.get(parameterIndex));
                 if(parameter.getClass().equals(super.getColumnTypes().get(this.parametersToBeSet.get(parameterIndex)))) {
                     this.preparedStatement.setObject(parameterIndex + 1, parameter);
                     continue;
@@ -149,13 +149,13 @@ abstract class L4STImpl extends L4STMetaDataImpl implements L4ST {
     private void resetFields(L4STEntity entity) {
         this.query = "";
         this.parametersToBeSet.clear();
-        this.entityToTableFields.clear();
+        this.entityFieldsFoundInTable.clear();
         Field[] tempFieldsArray = entity.getClass().getDeclaredFields();
         for(Field tempField : tempFieldsArray) {
             if (super.getAllColumns().contains(tempField.getName())) {
                 try {
                     tempField.setAccessible(true);
-                    this.entityToTableFields.put(tempField.getName(), tempField.get(entity));
+                    this.entityFieldsFoundInTable.put(tempField.getName(), tempField.get(entity));
                 } catch (Exception ignored) {}
             }
         }
